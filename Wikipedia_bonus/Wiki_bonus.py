@@ -4,17 +4,21 @@ from sseclient import SSEClient as EventSource
 import pprint
 
 count = 0
+domain = {}
+user = {}
 url = 'https://stream.wikimedia.org/v2/stream/revision-create'
 
 
 def wiki_stream(): 
 	
 	global count
-	domain = {}
-	user = {}
+	global domain
+	global user
 	count = count+1
 	if count >5 :
 		open("file2", "w").close()
+		user.clear()
+		domain.clear()
 		count = 1
 
 	start_time = time.time()
