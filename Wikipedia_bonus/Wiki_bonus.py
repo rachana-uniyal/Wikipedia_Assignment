@@ -3,26 +3,29 @@ import time
 from sseclient import SSEClient as EventSource
 import pprint
 
+count = 0
+url = 'https://stream.wikimedia.org/v2/stream/revision-create'
+
+
 def wiki_stream(): 
 	
-
-	url = 'https://stream.wikimedia.org/v2/stream/revision-create'
-
-	c =0
+	global count
 	domain = {}
 	user = {}
-	#t_end = time.time() + 60 
+	count = count+1
+	if count >5 :
+		open("file2", "w").close()
+		count = 1
 
-	#while time.time() < t_end:
 	start_time = time.time()
 	limit = 60
-	open("my-file", "w").close()
 	for event in EventSource(url):
 		if (time.time() - start_time) > limit:
+			print("*********************************************** Last", count, "Min Report **************************************************")
 			break
 		if event.event == 'message':
 			try:
-				out_file = open("my-file", "a+")
+				out_file = open("file2", "a+")
 				out_file.write(event.data+'\n')
 				pass
 				out_file.close()
@@ -30,10 +33,11 @@ def wiki_stream():
 				pass
 	
 	
-	with open('my-file') as f:
+	with open('file2') as f:
 		content = f.readlines()
-		content = content[1:]
 		for i in content:
+			if not i.lstrip().rstrip():
+				continue
 			data = json.loads(i)
 			key = data['meta']['domain']
 			if key in domain:
@@ -43,20 +47,22 @@ def wiki_stream():
 			
 	dict(sorted(domain.items(), key=lambda item: item[1]))	
 
-	print("                                                Domain Report")
+	print("\n")
+	print("                                                  Domain Report")
 	print("\n")
 	print("Total number of Wikipedia Domains Updated:", len(domain))	
 	for d in domain:
-		print(d , domain[d] , ": Pages updated")	
+		print(d , " : " ,domain[d] , " Pages updated")	
 
 
 	print("\n")
-	print("*****************************************************************************************************************")
 
-	with open('my-file') as f:
+
+	with open('file2') as f:
 		content = f.readlines()
-		content = content[1:]
 		for i in content:
+			if not i.lstrip().rstrip():
+				continue
 			data = json.loads(i)
 			usr = data['performer']['user_text']
 			if data['meta']['domain']=='en.wikipedia.org':
@@ -73,7 +79,7 @@ def wiki_stream():
 	dict(sorted(user.items(), key = lambda item: item[1]))
 
 
-	print("                                               User Report")
+	print("                                                  User Report")
 	print("Users who made changes to en.wikipedia.org")
 	print("\n")
 
